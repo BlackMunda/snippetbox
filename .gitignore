@@ -1,0 +1,12 @@
+# Editor / IDE
+.idea/
+.vscode/
+
+# Vim
+*.swp
+*.swo
+*.swn
+
+# OS
+.DS_Store
+
