@@ -1,7 +1,8 @@
 package main
 
 import (
-    "log"
+    "os"
+    "log/slog"
     "flag"
     "net/http"
 )
@@ -12,6 +13,8 @@ func main() {
     flag.Parse()
 
     mux := http.NewServeMux()
+    
+    logger := slog.New(slog.NewTextHandler(os.Stdout, nil))  //handleroption struct customize
 
     fileServer := http.FileServer(http.Dir("./ui/static/"))
 
@@ -22,8 +25,10 @@ func main() {
     mux.HandleFunc("GET /snippet/create", snippetCreate)
     mux.HandleFunc("POST /snippet/create", snippetCreatePost)
 
-    log.Printf("starting server on %s", *addr)
+    logger.Info("starting server on ", slog.Any("addr", *addr))
 
     err := http.ListenAndServe(*addr, mux)
-    log.Fatal(err)
+    logger.Error(err.Error())
+    os.Exit(1)
 }
+
