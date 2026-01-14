@@ -2,10 +2,14 @@ package main
 
 import (
     "log"
+    "flag"
     "net/http"
 )
 
 func main() {
+
+    addr := flag.String("addr", ":8080", "sever starting port")
+    flag.Parse()
 
     mux := http.NewServeMux()
 
@@ -18,8 +22,8 @@ func main() {
     mux.HandleFunc("GET /snippet/create", snippetCreate)
     mux.HandleFunc("POST /snippet/create", snippetCreatePost)
 
-    log.Print("starting server on :8080")
+    log.Printf("starting server on %s", *addr)
 
-    err := http.ListenAndServe(":8080", mux)
+    err := http.ListenAndServe(*addr, mux)
     log.Fatal(err)
 }
