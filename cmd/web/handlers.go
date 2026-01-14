@@ -18,14 +18,13 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 
     tf, err := template.ParseFiles(files...)
     if err != nil {
-        app.logger.Error(err.Error())
-        http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+        app.serverError(w, r, err)
+        return
     }
 
     err = tf.ExecuteTemplate(w,"base", nil)
     if err != nil {
-        app.logger.Error(err.Error(), "method", r.Method, "URI", r.URL.RequestURI())
-        http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+        app.serverError(w, r, err)
     }
 
     w.Write([]byte("Hello from Snippetbox, my nigga!!"))
