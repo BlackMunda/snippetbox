@@ -25,21 +25,19 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = tf.ExecuteTemplate(w, "base", nil)
-	if err != nil {
-		app.serverError(w, r, err)
-	}
-
-	w.Write([]byte("Hello from Snippetbox, my nigga!!"))
-
 	// testing only
 	snippets, terr := app.snippets.Latest()
 	if terr != nil {
 		app.serverError(w, r, terr)
 	}
 
-	for _, snippet := range snippets {
-		fmt.Fprintf(w, "%+v\n", snippet)
+	data := templateData{
+		Snippets: snippets,
+	}
+
+	err = tf.ExecuteTemplate(w, "base", data)
+	if err != nil {
+		app.serverError(w, r, err)
 	}
 }
 
