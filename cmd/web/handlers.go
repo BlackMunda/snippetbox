@@ -1,83 +1,104 @@
 package main
 
 import (
-    "errors"
-    "snippetbox.net/internal/models"
-    "html/template"
-    "fmt"
-    "net/http"
-    "strconv"
+	"errors"
+	"fmt"
+	"html/template"
+	"net/http"
+	"strconv"
+
+	"snippetbox.net/internal/models"
 )
 
 func (app *application) home(w http.ResponseWriter, r *http.Request) {
-    w.Header().Add("Server", "Go")
+	w.Header().Add("Server", "Go")
 
-    files := []string{
-        "./ui/html/base.tmpl",
-        "./ui/html/partials/nav.tmpl",
-        "./ui/html/pages/home.tmpl",
-    }
+	files := []string{
+		"./ui/html/base.tmpl",
+		"./ui/html/partials/nav.tmpl",
+		"./ui/html/pages/home.tmpl",
+	}
 
-    tf, err := template.ParseFiles(files...)
-    if err != nil {
-        app.serverError(w, r, err)
-        return
-    }
+	tf, err := template.ParseFiles(files...)
+	if err != nil {
+		app.serverError(w, r, err)
+		return
+	}
 
-    err = tf.ExecuteTemplate(w,"base", nil)
-    if err != nil {
-        app.serverError(w, r, err)
-    }
+	err = tf.ExecuteTemplate(w, "base", nil)
+	if err != nil {
+		app.serverError(w, r, err)
+	}
 
-    w.Write([]byte("Hello from Snippetbox, my nigga!!"))
+	w.Write([]byte("Hello from Snippetbox, my nigga!!"))
 
-    //testing only
-    snippets, terr := app.snippets.Latest()
-    if terr != nil {
-        app.serverError(w, r, terr)
-    }
+	// testing only
+	snippets, terr := app.snippets.Latest()
+	if terr != nil {
+		app.serverError(w, r, terr)
+	}
 
-    for _, snippet := range snippets {
-        fmt.Fprintf(w, "%+v\n", snippet)
-    }
+	for _, snippet := range snippets {
+		fmt.Fprintf(w, "%+v\n", snippet)
+	}
 }
 
 func (app *application) snippetView(w http.ResponseWriter, r *http.Request) {
-    id, err := strconv.Atoi(r.PathValue("id"))
-    if err != nil || id < 1 {
-        http.NotFound(w, r)
-        return
-    }
+	id, err := strconv.Atoi(r.PathValue("id"))
+	if err != nil || id < 1 {
+		http.NotFound(w, r)
+		return
+	}
 
-    snippet, err := app.snippets.Get(id)
-    if err != nil {
-        if errors.Is(err, models.ErrNoRecord){
-            http.NotFound(w, r)
-        } else {
-            app.serverError(w, r, err)
-        }
-        
-        return
-    }
+	snippet, err := app.snippets.Get(id)
+	if err != nil {
+		if errors.Is(err, models.ErrNoRecord) {
+			http.NotFound(w, r)
+		} else {
+			app.serverError(w, r, err)
+		}
 
-    fmt.Fprintf(w, "%+v", snippet)
+		return
+	}
 
+	// for showing snippets
+	files := []string{
+		"./ui/html/base.tmpl",
+		"./ui/html/partials/nav.tmpl",
+		"./ui/html/pages/view.tmpl",
+	}
+
+	tf, err := template.ParseFiles(files...)
+	if err != nil {
+		app.serverError(w, r, err)
+		return
+	}
+
+	data := templateData{
+		Snippet: snippet,
+	}
+
+	err = tf.ExecuteTemplate(w, "base", data)
+	if err != nil {
+		app.serverError(w, r, err)
+	}
+
+	// fmt.Fprintf(w, "%+v", snippet)
 }
 
 func (app *application) snippetCreate(w http.ResponseWriter, r *http.Request) {
-    w.Write([]byte("Display a form for creating a new snippet..., my nigga!!"))
+	w.Write([]byte("Display a form for creating a new snippet..., my nigga!!"))
 }
 
 func (app *application) snippetCreatePost(w http.ResponseWriter, r *http.Request) {
-    title := "O snail"
-    content := "O snail\nClimb Mount Fuji,\nBut slowly, slowly!\n\n– Kobayashi Issa"
-    expires := 7
+	title := "O snail"
+	content := "O snail\nClimb Mount Fuji,\nBut slowly, slowly!\n\n– Kobayashi Issa"
+	expires := 7
 
-    id, err := app.snippets.Insert(title, content, expires)
-    if err != nil {
-        app.serverError(w, r, err)
-    }
+	id, err := app.snippets.Insert(title, content, expires)
+	if err != nil {
+		app.serverError(w, r, err)
+	}
 
-    http.Redirect(w, r, fmt.Sprintf("/snippet/view/%d", id), http.StatusSeeOther)
+	http.Redirect(w, r, fmt.Sprintf("/snippet/view/%d", id), http.StatusSeeOther)
 }
-
