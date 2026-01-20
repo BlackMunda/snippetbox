@@ -10,8 +10,6 @@ import (
 )
 
 func (app *application) home(w http.ResponseWriter, r *http.Request) {
-	w.Header().Add("Server", "Go")
-
 	snippets, terr := app.snippets.Latest()
 	if terr != nil {
 		app.serverError(w, r, terr)
