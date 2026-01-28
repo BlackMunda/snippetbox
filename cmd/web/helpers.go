@@ -8,6 +8,8 @@ import (
 	"runtime/debug"
 	"time"
 
+	"github.com/justinas/nosurf"
+
 	"github.com/go-playground/form/v4"
 )
 
@@ -51,6 +53,7 @@ func (app *application) newTemplateData(r *http.Request) templateData {
 		CurrentYear:     time.Now().Year(),
 		Flash:           app.sessionManager.PopString(r.Context(), "flash"),
 		IsAuthenticated: app.isAuthenticated(r),
+		CSRFToken:       nosurf.Token(r),
 	}
 }
 
